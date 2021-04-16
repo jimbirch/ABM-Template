@@ -311,13 +311,7 @@ bool readDataFile (string fname, int layer) {
       stringstream s(line);
       for (int j = 0; j < dimension; j++) {
         getline(s, word, delim);
-	// cout << "number is " << word << "\n";
 	if(word != "") enviro.push(j, i, layer, stoi(word,nullptr,10));
-        /* } else {
-          cout << "invalid dimensions in file: " << fname;
-          cout << "correct dimensions are " << dimension;
-	  return false;
-        } */
       }
     }
   }
@@ -331,6 +325,7 @@ int main (int argc, char **argv) {
   // window.
   srand (time(NULL));
 
+	// Read in data files in order
   for (int i = 1; i < argc; ++i) {
     readDataFile(argv[i], i - 1);
   }
@@ -345,12 +340,6 @@ int main (int argc, char **argv) {
   glutInitWindowSize(800, 800);
   glutInitWindowPosition(100, 100);
   int win = glutCreateWindow("C++ Agent Based Model");
-
-  // Want to add additional init code? Read environment variables from files?
-  // Put that here.
-  //for (int i = 1; i < argc; ++i) {
-  //  readDataFile(argv[i], i-2); 
-  //}
 
   // Register OpenGL functional callbacks for handling keyboard inputs,
   // updating the display, and our controller function.
