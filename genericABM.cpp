@@ -41,7 +41,7 @@ class ABMagent {
   public:
     float x;
     float y;
-		float angle;
+    float angle;
     int state;
     bool active;
     ABMagent() {
@@ -75,39 +75,39 @@ class ABMagent {
       return status;
     }
 
-		void setAngle (float theta) {
-			// Allow the angle to be set from outside the function.
-			// Check to make sure it is between 0 and 2pi radians.
-			angle = theta;
-			while(fixAngle()) {
-			}
-		}
+    void setAngle (float theta) {
+      // Allow the angle to be set from outside the function.
+      // Check to make sure it is between 0 and 2pi radians.
+      angle = theta;
+      while(fixAngle()) {
+      }
+    }
 
-		bool fixAngle() {
-		  // Checks if the angle is less than zero or greater 
-			// than 2pi radians. Adds or subtracts 2pi radians as
-			// appropriate. Returns true if the angle is in range,
-			// returns false if the angle is adjusted.
-			if(angle > 2 * PI) {
-				angle -= 2 * PI;
-				return false;
-			} else if(angle < 0); {
-				angle += 2 * PI;
-				return false;
-			}
-			return true;
-		}
+    bool fixAngle() {
+      // Checks if the angle is less than zero or greater 
+      // than 2pi radians. Adds or subtracts 2pi radians as
+      // appropriate. Returns true if the angle is in range,
+      // returns false if the angle is adjusted.
+      if(angle > 2 * PI) {
+        angle -= 2 * PI;
+        return false;
+      } else if(angle < 0); {
+        angle += 2 * PI;
+        return false;
+      }
+      return true;
+    }
 
-		void move() {
-		  // Move behaviour. Moves the agent by SPEED in the
-			// direction of angle.
-			float i = cos(angle) * SPEED;
-			float j = sin(angle) * SPEED;
-			if(abs(i) < 1 && abs(j) < 1) {
-				x += i;
-				y += j;
-			}
-		}
+    void move() {
+      // Move behaviour. Moves the agent by SPEED in the
+      // direction of angle.
+      float i = cos(angle) * SPEED;
+      float j = sin(angle) * SPEED;
+      if(abs(i) < 1 && abs(j) < 1) {
+        x += i;
+        y += j;
+      }
+    }
 
     float rnorm() {
       // We use the Box-Muller transform to generate a normally
@@ -118,18 +118,18 @@ class ABMagent {
       return Z;
     }
 
-		void search() {
-		  // Searching behaviour. Need to find food something?
-			// Randomly modifies the agent's direction and then
-			// moves.
-			//
-			// If something is obstructing the agent, reject the
-			// move in the controller code.
-			// 
-	 		float deflection = rnorm() * 0.25 * PI;
-			setAngle(angle + deflection);
-			move();
-		}
+    void search() {
+      // Searching behaviour. Need to find food something?
+      // Randomly modifies the agent's direction and then
+      // moves.
+      //
+      // If something is obstructing the agent, reject the
+      // move in the controller code.
+      // 
+       float deflection = rnorm() * 0.25 * PI;
+      setAngle(angle + deflection);
+      move();
+    }
 };
 // Instatiate the number of agents that we want in our simulation.
 ABMagent ABMagents[NAGENTS];
@@ -285,9 +285,9 @@ void updateTime (int value) {
   // This method is not frame-independent (ie, the frame updates after the code
   // here), so try to keep it concise.
   //
-	for (int i = 0; i < NAGENTS; i++) {
-	  ABMagents[i].search();
-	}
+  for (int i = 0; i < NAGENTS; i++) {
+    ABMagents[i].search();
+  }
   glutPostRedisplay();
   glutTimerFunc(7, updateTime, 0);
 }
@@ -311,7 +311,7 @@ bool readDataFile (string fname, int layer) {
       stringstream s(line);
       for (int j = 0; j < dimension; j++) {
         getline(s, word, delim);
-	if(word != "") enviro.push(j, i, layer, stoi(word,nullptr,10));
+  if(word != "") enviro.push(j, i, layer, stoi(word,nullptr,10));
       }
     }
   }
@@ -325,7 +325,7 @@ int main (int argc, char **argv) {
   // window.
   srand (time(NULL));
 
-	// Read in data files in order
+  // Read in data files in order
   for (int i = 1; i < argc; ++i) {
     readDataFile(argv[i], i - 1);
   }
