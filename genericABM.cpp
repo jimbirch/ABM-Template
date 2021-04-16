@@ -15,11 +15,16 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 #define NAGENTS 1000
 #define NLAYERS 5
 #define GRIDRES 0.03
 #define PI 3.14159265359
+#define SPEED 0.005
 
 using namespace std;
 
@@ -36,6 +41,7 @@ class ABMagent {
   public:
     float x;
     float y;
+		float angle;
     int state;
     bool active;
     ABMagent() {
@@ -69,14 +75,61 @@ class ABMagent {
       return status;
     }
 
+		void setAngle (float theta) {
+			// Allow the angle to be set from outside the function.
+			// Check to make sure it is between 0 and 2pi radians.
+			angle = theta;
+			while(fixAngle()) {
+			}
+		}
+
+		bool fixAngle() {
+		  // Checks if the angle is less than zero or greater 
+			// than 2pi radians. Adds or subtracts 2pi radians as
+			// appropriate. Returns true if the angle is in range,
+			// returns false if the angle is adjusted.
+			if(angle > 2 * PI) {
+				angle -= 2 * PI;
+				return false;
+			} else if(angle < 0); {
+				angle += 2 * PI;
+				return false;
+			}
+			return true;
+		}
+
+		void move() {
+		  // Move behaviour. Moves the agent by SPEED in the
+			// direction of angle.
+			float i = cos(angle) * SPEED;
+			float j = sin(angle) * SPEED;
+			if(abs(i) < 1 && abs(j) < 1) {
+				x += i;
+				y += j;
+			}
+		}
+
     float rnorm() {
-        // We use the Box-Muller transform to generate a normally
-        // distributed random number.
-        float u1 = rand() / RAND_MAX;
-        float u2 = rand() / RAND_MAX;
-        float Z = sqrt(-2 * log(u1)) * cos(2 * PI * u2);
-        return Z;
+      // We use the Box-Muller transform to generate a normally
+      // distributed random number.
+      float u1 = rand() / (double)RAND_MAX;
+      float u2 = rand() / (double)RAND_MAX;
+      float Z = sqrt(-2 * log(u1)) * cos(2 * PI * u2);
+      return Z;
     }
+
+		void search() {
+		  // Searching behaviour. Need to find food something?
+			// Randomly modifies the agent's direction and then
+			// moves.
+			//
+			// If something is obstructing the agent, reject the
+			// move in the controller code.
+			// 
+	 		float deflection = rnorm() * 0.25 * PI;
+			setAngle(angle + deflection);
+			move();
+		}
 };
 // Instatiate the number of agents that we want in our simulation.
 ABMagent ABMagents[NAGENTS];
@@ -100,6 +153,7 @@ class environment {
       // each layer and sets up NLAYERS blank layers. You'll
       // probably want to update the grid manually or read 
       // in the relevant data from files.
+      srand(time(NULL));
       for(int i = 0; i < NLAYERS; i++) { // Layer
         for(int j = 0; j < 3; j++) {
           colour[i][j] = rand() % 100/100.0;
@@ -164,6 +218,10 @@ class environment {
       // of the representation for that layer.
       return colour[layer][2];
     }
+    void push(int x, int y, int layer, int value) {
+      // Overwrite a value at coordinate (x, y) in layer with value.
+      grid[x][y][layer] = value;
+    }
 };
 environment enviro;
 
@@ -227,8 +285,44 @@ void updateTime (int value) {
   // This method is not frame-independent (ie, the frame updates after the code
   // here), so try to keep it concise.
   //
+	for (int i = 0; i < NAGENTS; i++) {
+	  ABMagents[i].search();
+	}
   glutPostRedisplay();
   glutTimerFunc(7, updateTime, 0);
+}
+
+bool readDataFile (string fname, int layer) {
+  int dimension = 1 + 2/GRIDRES;
+  int row[dimension];
+  char delim = ',';
+  fstream fin;
+  fin.open(fname,ios::in);
+  string temp, line, word;
+  if(layer > NLAYERS) {
+    cout << "Too many input files. Input at most: " << NLAYERS;
+    cout << "input files.";
+    return false;
+  }
+
+  while(fin >> temp) {
+    for (int i = 0; i < dimension; i++) {
+      getline(fin, line);
+      stringstream s(line);
+      for (int j = 0; j < dimension; j++) {
+        getline(s, word, delim);
+	// cout << "number is " << word << "\n";
+	if(word != "") enviro.push(j, i, layer, stoi(word,nullptr,10));
+        /* } else {
+          cout << "invalid dimensions in file: " << fname;
+          cout << "correct dimensions are " << dimension;
+	  return false;
+        } */
+      }
+    }
+  }
+  fin.close();
+  return true; 
 }
 
 int main (int argc, char **argv) {
@@ -236,7 +330,17 @@ int main (int argc, char **argv) {
   // Setup: set the random number generator's seed, initialize our display
   // window.
   srand (time(NULL));
-  glutInit(&argc, argv); // Pass argc and argv to glut. Maybe pass fake ones.
+
+  for (int i = 1; i < argc; ++i) {
+    readDataFile(argv[i], i - 1);
+  }
+
+  // Pretend to pass argc and argv to glut but really don't.
+  int fargc = 0;
+  char *fargv[1] = {(char*)" "};
+  glutInit(&fargc, fargv); 
+
+  // Initialize our window.
   glutInitDisplayMode(GLUT_SINGLE);
   glutInitWindowSize(800, 800);
   glutInitWindowPosition(100, 100);
@@ -244,6 +348,9 @@ int main (int argc, char **argv) {
 
   // Want to add additional init code? Read environment variables from files?
   // Put that here.
+  //for (int i = 1; i < argc; ++i) {
+  //  readDataFile(argv[i], i-2); 
+  //}
 
   // Register OpenGL functional callbacks for handling keyboard inputs,
   // updating the display, and our controller function.
