@@ -101,11 +101,11 @@ class ABMagent {
     void move() {
       // Move behaviour. Moves the agent by SPEED in the
       // direction of angle.
-      float i = cos(angle) * SPEED;
-      float j = sin(angle) * SPEED;
-      if(abs(i) < 1 && abs(j) < 1) {
-        x += i;
-        y += j;
+      float i = x + cos(angle) * SPEED;
+      float j = y + sin(angle) * SPEED;
+      if(abs(i) < 0.99 && abs(j) < 0.99) {
+        x = i;
+        y = j;
       }
     }
 
@@ -126,7 +126,7 @@ class ABMagent {
       // If something is obstructing the agent, reject the
       // move in the controller code.
       // 
-       float deflection = rnorm() * 0.25 * PI;
+      float deflection = rnorm() * 0.25 * PI;
       setAngle(angle + deflection);
       move();
     }
